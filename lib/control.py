@@ -63,7 +63,17 @@ class Control:
         self.hits = []
         self.begin = False
 
-        self.entities.append(lib.pon.generic.Pon(self, True))
+        pon = lib.pon.generic.Pon(self, True)
+        pon.x = 0
+        self.entities.append(pon)
+
+        pon = lib.pon.generic.Pon(self, True)
+        pon.x = 50
+        self.entities.append(pon)
+
+        pon = lib.pon.generic.Pon(self, True)
+        pon.x = 100
+        self.entities.append(pon)
 
         self.load()
 
