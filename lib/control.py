@@ -276,6 +276,7 @@ class Control:
             #print(self.measure, self.beat)
 
         for entity in self.entities:
+            entity.timer = self.time
             entity.update()
 
     def draw(self):

@@ -1,11 +1,25 @@
+import math
 import lib.game
 import lib.graphics
 import lib.entity
+
+patapon_atlas = lib.graphics.Atlas("assets/sprites/entity/pon/patapon.png")
+patapon_head = patapon_atlas.region((0, 0, 30, 30))
+patapon_eye = patapon_atlas.region((30, 0, 30, 30))
+patapon_pupil = patapon_atlas.region((60, 0, 30, 30))
+patapon_pupil_alt = patapon_atlas.region((60, 30, 30, 30))
+patapon_legs = [
+    patapon_atlas.region((0, 30, 30, 30)),
+    patapon_atlas.region((30, 30, 30, 30)),
+    patapon_atlas.region((0, 60, 30, 30)),
+    patapon_atlas.region((30, 60, 30, 30))
+]
 
 class Pon(lib.entity.Entity):
     def __init__(self, control, friendly):
         super().__init__(control)
         self.friendly = friendly
+        self.timer = 0
 
     def update(self):
         pass
@@ -13,10 +27,8 @@ class Pon(lib.entity.Entity):
     def draw(self):
         x = self.x - self.control.camerax
         y = lib.game.height - (self.y - self.control.cameray)
-        lib.graphics.rect((0, 0, 0), (x + 11, y - 11, 2, 11))
-        lib.graphics.rect((0, 0, 0), (x + 17, y - 11, 2, 11))
-        lib.graphics.rect((0, 0, 0), (x + 8, y - 2, 3, 2))
-        lib.graphics.rect((0, 0, 0), (x + 19, y - 2, 3, 2))
-        lib.graphics.ellipse((0, 0, 0), (x, y - 36, 30, 30))
-        lib.graphics.ellipse((255, 255, 255), (x + 5, y - 36 + 5, 20, 20))
-        lib.graphics.ellipse((0, 0, 0), (x + 10, y - 36 + 10, 10, 10))
+        y -= math.floor((self.timer % 0.5) * 6) * 2
+        patapon_legs[math.floor(self.timer % 1 * 4)].draw((x, y - 30))
+        patapon_head.draw((x, y - 40))
+        patapon_eye.draw((x, y - 40))
+        patapon_pupil.draw((x, y - 40))

@@ -15,6 +15,7 @@ tickslastframe = 0
 pygame.init()
 pygame.mixer.init(frequency = 44100, channels = 16)
 screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("patapon 4")
 
 mission = lib.data.mission.Mission("freakout-rock")
 test = lib.control.Control(mission)
