@@ -63,15 +63,15 @@ class Control:
         self.hits = []
         self.begin = False
 
-        pon = lib.pon.generic.Pon(self, True)
+        pon = lib.pon.generic.Hatapon(self)
         pon.x = 0
         self.entities.append(pon)
 
-        pon = lib.pon.generic.Pon(self, True)
+        pon = lib.pon.generic.Yaripon(self, True)
         pon.x = 50
         self.entities.append(pon)
 
-        pon = lib.pon.generic.Pon(self, True)
+        pon = lib.pon.generic.Yaripon(self, True)
         pon.x = 100
         self.entities.append(pon)
 
@@ -101,6 +101,10 @@ class Control:
         self.beat = -1
         self.measure = -1
         lib.sound.play(2, "Complain-0" + str(random.randint(1, 2)), lib.settings.sfxvolume)
+        for entity in self.entities:
+            if isinstance(entity, lib.pon.generic.Pon):
+                if not entity.hatapon:
+                    entity.animation("confused")
 
     def drum(self, name):
         nearest = lib.math2.round(self.beattime, 0.5)
@@ -125,6 +129,10 @@ class Control:
                     self.hits.pop(0)
             if level == 0:
                 lib.sound.play(1, name + "_3", lib.settings.sfxvolume)
+                for entity in self.entities:
+                    if isinstance(entity, lib.pon.generic.Pon):
+                        if not entity.hatapon:
+                            entity.animation("confused")
             else:
                 if abs(nearest - self.beattime) < 0.05:
                     lib.sound.play(1, name, lib.settings.sfxvolume)
@@ -133,6 +141,10 @@ class Control:
                 if level == 2:
                     lib.sound.play(3, "perfect", lib.settings.sfxvolume)
                     self.begin = True
+                    for entity in self.entities:
+                        if isinstance(entity, lib.pon.generic.Pon):
+                            if not entity.hatapon and entity.playinganimation == "confused":
+                                entity.animation("idle")
         else:
             if lib.math2.round(self.beattime, 0.5) % 8 < 4:
                 self.fail()
@@ -161,6 +173,10 @@ class Control:
                     lib.sound.play(1, name + "_2", lib.settings.sfxvolume)
                 if level == 2:
                     lib.sound.play(3, "perfect", lib.settings.sfxvolume)
+                for entity in self.entities:
+                    if isinstance(entity, lib.pon.generic.Pon):
+                        if not entity.hatapon and entity.playinganimation == "confused":
+                            entity.animation("idle")
 
     def update(self):
         self.time += lib.game.deltatime
@@ -227,6 +243,18 @@ class Control:
                                     lib.sound.play(2, match + "-01", lib.settings.musicvolume)
                                 else:
                                     lib.sound.play(2, match + "-00", lib.settings.musicvolume)
+                                if match == "Attack":
+                                    for entity in self.entities:
+                                        if isinstance(entity, lib.pon.generic.Pon):
+                                            entity.attack()
+                                elif match == "Defend":
+                                    for entity in self.entities:
+                                        if isinstance(entity, lib.pon.generic.Pon):
+                                            entity.defend()
+                                elif match == "Charge":
+                                    for entity in self.entities:
+                                        if isinstance(entity, lib.pon.generic.Pon):
+                                            entity.charge()
                             else:
                                 self.fail()
                             self.hits = []
