@@ -65,7 +65,8 @@ class Control:
         self.begin = False
 
         pon = lib.pon.generic.Hatapon(self)
-        pon.x = self.marker
+        pon.markeroffset = 0
+        pon.x = 0
         self.entities.append(pon)
 
         pon = lib.pon.generic.Yaripon(self, True)
@@ -345,6 +346,11 @@ class Control:
         
         for entity in self.entities:
             entity.draw()
+        
+        lib.graphics.rect((255, 255, 255), (self.marker - self.camerax, lib.game.height + self.cameray, 30, 5))
+
+        for x in range(math.floor(self.camerax / 200) * 200 - 200, math.floor(self.camerax / 200) * 200 + lib.game.width + 200, 200):
+            lib.graphics.rect((255, 255, 255), (x - self.camerax - 1, lib.game.height + self.cameray, 2, x % 400 == 0 and 20 or 10))
         
         if self.combo > 1:
             color = (20, 20, 20)
