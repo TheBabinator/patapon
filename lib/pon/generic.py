@@ -27,10 +27,19 @@ class Pon(lib.entity.Entity):
         self.helmet = lib.content.accessories.content["wooden-helm"]
         self.playinganimation = "idle"
         self.animationtime = 0
+        self.markeroffset = 0
+        self.moving = False
+        self.movetarget = 0
+        self.movespeed = 0
 
     def animation(self, name):
         self.playinganimation = name
         self.animationtime = 4
+    
+    def march(self, marker, speed):
+        self.moving = True
+        self.movetarget = marker + self.markeroffset
+        self.movespeed = speed
 
     def attack(self):
         pass
@@ -47,6 +56,11 @@ class Pon(lib.entity.Entity):
         else:
             self.playinganimation = "idle"
             self.animationtime = 0
+        if self.moving:
+            if self.x < self.movetarget:
+                self.x = min(self.x + self.movespeed * lib.game.deltatime, self.movetarget)
+            elif self.x > self.movetarget:
+                self.x = max(self.x - self.movespeed * lib.game.deltatime, self.movetarget)
 
     def draw(self):
         x = self.x - self.control.camerax

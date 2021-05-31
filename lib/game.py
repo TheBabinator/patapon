@@ -7,7 +7,7 @@ import lib.control
 
 width = 1280
 height = 720
-targetfps = 144
+targetfps = 120
 frame = 0
 deltatime = 0
 tickslastframe = 0
@@ -46,6 +46,7 @@ def draw():
     pygame.display.flip()
 
 def launch():
+    global targetfps
     global frame
     global deltatime
     global tickslastframe
@@ -58,4 +59,4 @@ def launch():
         update()
         draw()
         tickslastframe = t
-        clock.tick(120)
+        clock.tick(targetfps)

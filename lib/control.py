@@ -49,6 +49,7 @@ class Control:
         self.camerax = -200
         self.cameray = -200
         self.entities = []
+        self.marker = 0
 
         self.bpm = 120
         self.time = -2.5
@@ -64,15 +65,22 @@ class Control:
         self.begin = False
 
         pon = lib.pon.generic.Hatapon(self)
-        pon.x = 0
+        pon.x = self.marker
         self.entities.append(pon)
 
         pon = lib.pon.generic.Yaripon(self, True)
-        pon.x = 50
+        pon.markeroffset = 60
+        pon.x = 60
         self.entities.append(pon)
 
         pon = lib.pon.generic.Yaripon(self, True)
+        pon.markeroffset = 100
         pon.x = 100
+        self.entities.append(pon)
+
+        pon = lib.pon.generic.Yaripon(self, True)
+        pon.markeroffset = 140
+        pon.x = 140
         self.entities.append(pon)
 
         self.load()
@@ -103,7 +111,7 @@ class Control:
         lib.sound.play(2, "Complain-0" + str(random.randint(1, 2)), lib.settings.sfxvolume)
         for entity in self.entities:
             if isinstance(entity, lib.pon.generic.Pon):
-                if not entity.hatapon:
+                if entity.friendly and not entity.hatapon:
                     entity.animation("confused")
 
     def drum(self, name):
@@ -131,7 +139,7 @@ class Control:
                 lib.sound.play(1, name + "_3", lib.settings.sfxvolume)
                 for entity in self.entities:
                     if isinstance(entity, lib.pon.generic.Pon):
-                        if not entity.hatapon:
+                        if entity.friendly and not entity.hatapon:
                             entity.animation("confused")
             else:
                 if abs(nearest - self.beattime) < 0.05:
@@ -143,7 +151,7 @@ class Control:
                     self.begin = True
                     for entity in self.entities:
                         if isinstance(entity, lib.pon.generic.Pon):
-                            if not entity.hatapon and entity.playinganimation == "confused":
+                            if entity.friendly and not entity.hatapon and entity.playinganimation == "confused":
                                 entity.animation("idle")
         else:
             if lib.math2.round(self.beattime, 0.5) % 8 < 4:
@@ -175,7 +183,7 @@ class Control:
                     lib.sound.play(3, "perfect", lib.settings.sfxvolume)
                 for entity in self.entities:
                     if isinstance(entity, lib.pon.generic.Pon):
-                        if not entity.hatapon and entity.playinganimation == "confused":
+                        if entity.friendly and not entity.hatapon and entity.playinganimation == "confused":
                             entity.animation("idle")
 
     def update(self):
@@ -243,18 +251,27 @@ class Control:
                                     lib.sound.play(2, match + "-01", lib.settings.musicvolume)
                                 else:
                                     lib.sound.play(2, match + "-00", lib.settings.musicvolume)
-                                if match == "Attack":
+                                if match == "March":
+                                    self.marker += 200
                                     for entity in self.entities:
                                         if isinstance(entity, lib.pon.generic.Pon):
-                                            entity.attack()
+                                            if entity.friendly:
+                                                entity.march(self.marker, 100)
+                                elif match == "Attack":
+                                    for entity in self.entities:
+                                        if isinstance(entity, lib.pon.generic.Pon):
+                                            if entity.friendly:
+                                                entity.attack()
                                 elif match == "Defend":
                                     for entity in self.entities:
                                         if isinstance(entity, lib.pon.generic.Pon):
-                                            entity.defend()
+                                            if entity.friendly:
+                                                entity.defend()
                                 elif match == "Charge":
                                     for entity in self.entities:
                                         if isinstance(entity, lib.pon.generic.Pon):
-                                            entity.charge()
+                                            if entity.friendly:
+                                                entity.charge()
                             else:
                                 self.fail()
                             self.hits = []
@@ -316,6 +333,9 @@ class Control:
         for entity in self.entities:
             entity.timer = self.time
             entity.update()
+            if isinstance(entity, lib.pon.generic.Pon):
+                if entity.hatapon:
+                    self.camerax = lib.math2.lerp(self.camerax, entity.x - 200, lib.game.deltatime * 2)
 
     def draw(self):
         lib.game.screen.fill((200, 200, 250))
