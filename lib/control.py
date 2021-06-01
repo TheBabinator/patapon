@@ -64,10 +64,10 @@ class Control:
         self.hits = []
         self.begin = False
 
-        pon = lib.pon.generic.Hatapon(self)
-        pon.markeroffset = 0
-        pon.x = 0
-        self.entities.append(pon)
+        self.hatapon = lib.pon.generic.Hatapon(self)
+        self.hatapon.markeroffset = 0
+        self.hatapon.x = 0
+        self.entities.append(self.hatapon)
 
         pon = lib.pon.generic.Yaripon(self, True)
         pon.markeroffset = 60
@@ -112,8 +112,10 @@ class Control:
         lib.sound.play(2, "Complain-0" + str(random.randint(1, 2)), lib.settings.sfxvolume)
         for entity in self.entities:
             if isinstance(entity, lib.pon.generic.Pon):
-                if entity.friendly and not entity.hatapon:
-                    entity.animation("confused")
+                if entity.friendly:
+                    entity.moving = False
+                    if not entity.hatapon:
+                        entity.animation("confused")
 
     def drum(self, name):
         nearest = lib.math2.round(self.beattime, 0.5)
@@ -140,7 +142,8 @@ class Control:
                 lib.sound.play(1, name + "_3", lib.settings.sfxvolume)
                 for entity in self.entities:
                     if isinstance(entity, lib.pon.generic.Pon):
-                        if entity.friendly and not entity.hatapon:
+                        entity.moving = False
+                        if not entity.hatapon:
                             entity.animation("confused")
             else:
                 if abs(nearest - self.beattime) < 0.05:
@@ -241,7 +244,7 @@ class Control:
                             if level == 2:
                                 self.calling = False
                                 self.combo += 1
-                                progression = 0.2
+                                progression = 0.11
                                 self.fever = min(max(self.fever + progression, 0), 2)
                                 if self.fever >= 1:
                                     if self.fevertime % 2 == 1:
@@ -253,7 +256,7 @@ class Control:
                                 else:
                                     lib.sound.play(2, match + "-00", lib.settings.musicvolume)
                                 if match == "March":
-                                    self.marker += 200
+                                    self.marker = self.hatapon.x + 200
                                     for entity in self.entities:
                                         if isinstance(entity, lib.pon.generic.Pon):
                                             if entity.friendly:

@@ -17,6 +17,11 @@ patapon_legs = [
     patapon_atlas.region((0, 60, 30, 30)),
     patapon_atlas.region((30, 60, 30, 30))
 ]
+hatapon_atlas = lib.graphics.Atlas("assets/sprites/entity/pon/hatapon.png")
+hatapon_arms_normal = hatapon_atlas.region((0, 0, 50, 50))
+hatapon_arms_up = hatapon_atlas.region((50, 0, 50, 50))
+hatapon_flagpole = hatapon_atlas.region((100, 0, 50, 150))
+hatapon_flag = hatapon_atlas.region((0, 50, 50, 100))
 
 class Pon(lib.entity.Entity):
     def __init__(self, control, friendly):
@@ -61,6 +66,8 @@ class Pon(lib.entity.Entity):
                 self.x = min(self.x + self.movespeed * lib.game.deltatime, self.movetarget)
             elif self.x > self.movetarget:
                 self.x = max(self.x - self.movespeed * lib.game.deltatime, self.movetarget)
+            else:
+                self.moving = False
 
     def draw(self):
         x = self.x - self.control.camerax
@@ -86,6 +93,20 @@ class Hatapon(Pon):
         super().__init__(control, True)
         self.hatapon = True
         self.helmet = lib.content.accessories.content["iron-helm"]
+    
+    def draw(self):
+        super().draw()
+        x = self.x - self.control.camerax
+        y = lib.game.height - (self.y - self.control.cameray)
+        y -= math.floor((self.timer % 0.5) * 6) * 2
+        if not self.moving:
+            hatapon_arms_normal.draw((x - 10, y - 50))
+            hatapon_flagpole.draw((x - 8, y - 155))
+            hatapon_flag.draw((x - 8, y - 110))
+        else:
+            hatapon_arms_up.draw((x - 10, y - 50))
+            hatapon_flagpole.draw((x - 10, y - 185))
+            hatapon_flag.draw((x - 10, y - 140))
 
 class Yaripon(Pon):
     def __init__(self, control, friendly):
