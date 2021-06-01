@@ -10,6 +10,12 @@ import lib.entity
 import lib.pon.generic
 import lib.settings
 
+worm_atlas = lib.graphics.Atlas("assets/sprites/ui/worm.png")
+worm_head = worm_atlas.region((0, 0, 100, 100))
+worm_head_fever = worm_atlas.region((0, 100, 100, 100))
+worm_head_glowing = worm_atlas.region((0, 200, 100, 100))
+worm_head_top = worm_atlas.region((100, 0, 100, 100))
+worm_head_back = worm_atlas.region((200, 0, 100, 100))
 songs = {}
 
 class Song:
@@ -358,19 +364,30 @@ class Control:
         if self.combo > 1:
             color = (20, 20, 20)
             if self.fever >= 1:
-                color = (200, 0, 0)
-                color2 = lib.math2.lerptup((255, 200, 50), (255, 50, 0), self.beattime % 1)
+                x = 300
+                if self.fever == 2:
+                    worm_head_glowing.draw((x - 50, 120))
+                else:
+                    worm_head_fever.draw((x - 50, 120))
                 for x in range(300):
+                    use = None
                     if x / 300 >= self.fever - 1:
-                        lib.graphics.rect(color, (x, 150 - 30 * math.sin((self.beattime * 2 - (x / 200)) * math.pi) * lib.math2.bias(1 - x / 300, 0.1), 1, 50))
+                        use = (200, 0, 0)
                     else:
-                        lib.graphics.rect(color2, (x, 150 - 30 * math.sin((self.beattime * 2 - (x / 200)) * math.pi) * lib.math2.bias(1 - x / 300, 0.1), 1, 50))
+                        use = (255, 200, 50)
+                    lib.graphics.rect(use, (x, 150 - 30 * math.sin((self.beattime * 2 - (x / 200)) * math.pi) * lib.math2.bias(1 - x / 300, 0.1), 1, 40))
+                worm_head_top.draw((x - 50, 120))
             elif self.fever >= 0.5:
+                worm_head.draw((300 - 50, 120 - 20 * math.sin((self.beattime * 2 + (300 / 200)) * math.pi)))
                 for x in range(300):
-                    lib.graphics.rect(color, (x, 150 - 20 * math.sin((self.beattime * 2 + (x / 200)) * math.pi), 1, 50))
+                    lib.graphics.rect(color, (x, 150 - 20 * math.sin((self.beattime * 2 + (x / 200)) * math.pi), 1, 40))
+                worm_head_top.draw((300 - 50, 120 - 20 * math.sin((self.beattime * 2 + (300 / 200)) * math.pi)))
             else:
+                x = 300
+                worm_head.draw((300 - 50, 120 - 20 * abs(math.sin((self.beattime + (300 / 150)) * math.pi))))
                 for x in range(300):
-                    lib.graphics.rect(color, (x, 150 - 20 * abs(math.sin((self.beattime + (x / 150)) * math.pi)), 1, 50))
+                    lib.graphics.rect(color, (x, 150 - 20 * abs(math.sin((self.beattime + (x / 150)) * math.pi)), 1, 40))
+                worm_head_top.draw((300 - 50, 120 - 20 * abs(math.sin((self.beattime + (300 / 150)) * math.pi))))
 
         if self.calling:
             color = (255, 255, 255)
