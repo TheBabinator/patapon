@@ -15,6 +15,7 @@ comboworm_atlas = lib.graphics.Atlas("assets/sprites/ui/comboworm.png")
 comboworm_segments = []
 comboworm_segments_fever = []
 comboworm_segments_top = []
+comboworm_segments_top_alt = []
 comboworm_segments_back = []
 for x in range(350):
     if x <= 250:
@@ -31,6 +32,11 @@ for x in range(350):
         comboworm_segments_top.append(comboworm_atlas.region((0, 100, 1, 100)))
     else:
         comboworm_segments_top.append(comboworm_atlas.region((x - 251, 100, 1, 100)))
+for x in range(350):
+    if x <= 250:
+        comboworm_segments_top_alt.append(comboworm_atlas.region((100, 100, 1, 100)))
+    else:
+        comboworm_segments_top_alt.append(comboworm_atlas.region((x - 251 + 100, 100, 1, 100)))
 for x in range(350):
     if x <= 250:
         comboworm_segments_back.append(comboworm_atlas.region((0, 200, 1, 100)))
@@ -404,7 +410,7 @@ class Control:
                 if self.fever >= 1:
                     y = 65 - 30 * math.sin((self.beattime * 2 - ((x + 80) / 200)) * math.pi) * max(lib.math2.bias(1 - (x + 80) / 350, 0.1), 0)
                 elif self.fever >= 0.5:
-                    y = 65 - 20 * math.sin((self.beattime * 2 + ((x + 80) / 200)) * math.pi)
+                    y = 65 - 30 * math.sin((self.beattime * 2 + ((x + 80) / 200)) * math.pi) * (1 - max(lib.math2.bias(1 - (x + 80) / 350, 0.5), 0))
                 else:
                     s = math.sin(((x + 80) / 150) * math.pi * 3) * abs(math.sin(self.beattime * math.pi)) * max(lib.math2.bias(1 - (x + 80) / 350, 0.01), 0)
                     if s < 0:
@@ -414,9 +420,13 @@ class Control:
                 if self.fever >= 1:
                     comboworm_segments_back[x].draw((x, y), dest = worm)
                     comboworm_segments_fever[x].draw((x, y), dest = worm)
+                    comboworm_segments_top[x].draw((x, y), dest = worm)
                 else:
                     comboworm_segments[x].draw((x, y), dest = worm)
-                comboworm_segments_top[x].draw((x, y), dest = worm)
+                    if self.fever >= 0.5:
+                        comboworm_segments_top_alt[x].draw((x, y), dest = worm)
+                    else:
+                        comboworm_segments_top[x].draw((x, y), dest = worm)
             if self.fever >= 1:
                 mult = 1 + (1 - self.beattime % 1) * 0.2
                 worm = pygame.transform.scale(worm, (math.floor(400 * mult), math.floor(200 * mult)))
