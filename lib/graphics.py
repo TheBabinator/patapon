@@ -5,18 +5,20 @@ class Region:
     def __init__(self, surface):
         self.surface = surface
     
-    def draw(self, position, size = None):
+    def draw(self, position, size = None, dest = None):
+        if dest == None:
+            dest = lib.game.screen
         if size == None:
             rect = self.surface.get_rect()
             rect.topleft = position[0], position[1]
-            lib.game.screen.blit(self.surface, rect)
+            dest.blit(self.surface, rect)
         else:
             size = (abs(size[0]), abs(size[1]))
             rect = self.surface.get_rect()
             rect.topleft = position[0], position[1]
             tempsurface = pygame.transform.flip(self.surface, size[0] < 0, size[1] < 0)
             tempsurface = pygame.transform.scale(tempsurface, size)
-            lib.game.screen.blit(tempsurface, rect)
+            dest.blit(tempsurface, rect)
 
 class Atlas:
     def __init__(self, filename):
@@ -28,7 +30,6 @@ class Atlas:
         surface.blit(self.sheet, (0, 0), rect)
         new = Region(surface)
         return new
-
 
 def lerp(a, b, alpha):
     return a + (b - a) * alpha

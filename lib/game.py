@@ -18,7 +18,7 @@ screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("patapon 4 or something")
 pygame.display.set_icon(pygame.image.load("assets/icon.png"))
 
-mission = lib.data.mission.Mission("freakout-rock")
+mission = lib.data.mission.Mission("hey-whazzat")
 test = lib.control.Control(mission)
 
 def close():

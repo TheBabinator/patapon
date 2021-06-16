@@ -1,6 +1,7 @@
 import os
 import math
 import random
+import pygame
 import lib.game
 import lib.input
 import lib.math2
@@ -10,12 +11,45 @@ import lib.entity
 import lib.pon.generic
 import lib.settings
 
-worm_atlas = lib.graphics.Atlas("assets/sprites/ui/worm.png")
-worm_head = worm_atlas.region((0, 0, 100, 100))
-worm_head_fever = worm_atlas.region((0, 100, 100, 100))
-worm_head_glowing = worm_atlas.region((0, 200, 100, 100))
-worm_head_top = worm_atlas.region((100, 0, 100, 100))
-worm_head_back = worm_atlas.region((200, 0, 100, 100))
+comboworm_atlas = lib.graphics.Atlas("assets/sprites/ui/comboworm.png")
+comboworm_segments = []
+comboworm_segments_fever = []
+comboworm_segments_top = []
+comboworm_segments_back = []
+for x in range(350):
+    if x <= 250:
+        comboworm_segments.append(comboworm_atlas.region((0, 0, 1, 100)))
+    else:
+        comboworm_segments.append(comboworm_atlas.region((x - 251, 0, 1, 100)))
+for x in range(350):
+    if x <= 250:
+        comboworm_segments_fever.append(comboworm_atlas.region((100, 0, 1, 100)))
+    else:
+        comboworm_segments_fever.append(comboworm_atlas.region((x - 251 + 100, 0, 1, 100)))
+for x in range(350):
+    if x <= 250:
+        comboworm_segments_top.append(comboworm_atlas.region((0, 100, 1, 100)))
+    else:
+        comboworm_segments_top.append(comboworm_atlas.region((x - 251, 100, 1, 100)))
+for x in range(350):
+    if x <= 250:
+        comboworm_segments_back.append(comboworm_atlas.region((0, 200, 1, 100)))
+    else:
+        comboworm_segments_back.append(comboworm_atlas.region((x - 251, 200, 1, 100)))
+combotext_numerals = [
+    comboworm_atlas.region((15, 106, 50, 50)),
+    comboworm_atlas.region((15, 106, 50, 50)),
+    comboworm_atlas.region((200, 0, 50, 50)),
+    comboworm_atlas.region((250, 0, 50, 50)),
+    comboworm_atlas.region((200, 50, 50, 50)),
+    comboworm_atlas.region((250, 50, 50, 50)),
+    comboworm_atlas.region((200, 100, 50, 50)),
+    comboworm_atlas.region((250, 100, 50, 50)),
+    comboworm_atlas.region((200, 150, 50, 50)),
+    comboworm_atlas.region((250, 150, 50, 50)),
+]
+combotext_combo = comboworm_atlas.region((100, 200, 200, 50))
+combotext_fever = comboworm_atlas.region((100, 250, 200, 50))
 songs = {}
 
 class Song:
@@ -363,32 +397,39 @@ class Control:
         
         if self.combo > 1:
             color = (20, 20, 20)
-            if self.fever >= 1:
-                x = 300
-                if self.fever == 2:
-                    worm_head_glowing.draw((x - 50, 120))
+            wormrect = pygame.Rect(0, 50, 400, 200)
+            worm = pygame.Surface(wormrect.size, pygame.SRCALPHA)
+            for x in range(350):
+                y = 0
+                if self.fever >= 1:
+                    y = 65 - 30 * math.sin((self.beattime * 2 - ((x + 80) / 200)) * math.pi) * max(lib.math2.bias(1 - (x + 80) / 350, 0.1), 0)
+                elif self.fever >= 0.5:
+                    y = 65 - 20 * math.sin((self.beattime * 2 + ((x + 80) / 200)) * math.pi)
                 else:
-                    worm_head_fever.draw((x - 50, 120))
-                for x in range(300):
-                    use = None
-                    if x / 300 >= self.fever - 1:
-                        use = (200, 0, 0)
-                    else:
-                        use = (255, 200, 50)
-                    lib.graphics.rect(use, (x, 150 - 30 * math.sin((self.beattime * 2 - (x / 200)) * math.pi) * lib.math2.bias(1 - x / 300, 0.1), 1, 40))
-                worm_head_top.draw((x - 50, 120))
-            elif self.fever >= 0.5:
-                worm_head.draw((300 - 50, 120 - 20 * math.sin((self.beattime * 2 + (300 / 200)) * math.pi)))
-                for x in range(300):
-                    lib.graphics.rect(color, (x, 150 - 20 * math.sin((self.beattime * 2 + (x / 200)) * math.pi), 1, 40))
-                worm_head_top.draw((300 - 50, 120 - 20 * math.sin((self.beattime * 2 + (300 / 200)) * math.pi)))
+                    s = math.sin(((x + 80) / 150) * math.pi * 3) * abs(math.sin(self.beattime * math.pi)) * max(lib.math2.bias(1 - (x + 80) / 350, 0.01), 0)
+                    if s < 0:
+                        s = s * 0.5
+                    s = s + math.sin((self.beattime * 2 + ((x + 80) / 200)) * math.pi) * (1 - max(lib.math2.bias(1 - (x + 80) / 350, 0.001), 0)) * 1.5
+                    y = 65 - 10 * s
+                if self.fever >= 1:
+                    comboworm_segments_back[x].draw((x, y), dest = worm)
+                    comboworm_segments_fever[x].draw((x, y), dest = worm)
+                else:
+                    comboworm_segments[x].draw((x, y), dest = worm)
+                comboworm_segments_top[x].draw((x, y), dest = worm)
+            if self.fever >= 1:
+                mult = 1 + (1 - self.beattime % 1) * 0.2
+                worm = pygame.transform.scale(worm, (math.floor(400 * mult), math.floor(200 * mult)))
+                wormrect.y = wormrect.y - 100 * (mult - 1)
+            lib.game.screen.blit(worm, wormrect)
+            if self.fever < 1:
+                combotext_numerals[self.combo].draw((30, 130))
+                combotext_combo.draw((60, 150))
             else:
-                x = 300
-                worm_head.draw((300 - 50, 120 - 20 * abs(math.sin((self.beattime + (300 / 150)) * math.pi))))
-                for x in range(300):
-                    lib.graphics.rect(color, (x, 150 - 20 * abs(math.sin((self.beattime + (x / 150)) * math.pi)), 1, 40))
-                worm_head_top.draw((300 - 50, 120 - 20 * abs(math.sin((self.beattime + (300 / 150)) * math.pi))))
-
+                xmult = 1.05 + math.sin((self.beattime - 0.25) * math.pi * 2) * 0.05
+                ymult = 1.4 + math.sin(self.beattime * math.pi * 2) * 0.4
+                combotext_fever.draw((45 - 100 * (xmult - 1), 150 - 50 * (ymult - 1)), size = (math.floor(200 * xmult), math.floor(50 * ymult)))
+        
         if self.calling:
             color = (255, 255, 255)
             transparency = 1 - self.beattime % 1
