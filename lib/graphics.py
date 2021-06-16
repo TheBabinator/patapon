@@ -5,19 +5,26 @@ class Region:
     def __init__(self, surface):
         self.surface = surface
     
-    def draw(self, position, size = None, dest = None):
+    def draw(self, position, alpha = 1, size = None, dest = None):
         if dest == None:
             dest = lib.game.screen
         if size == None:
             rect = self.surface.get_rect()
             rect.topleft = position[0], position[1]
-            dest.blit(self.surface, rect)
+            if alpha == 1:
+                dest.blit(self.surface, rect)
+            else:
+                tempsurface = self.surface.copy()
+                tempsurface.set_alpha(alpha * 255)
+                dest.blit(tempsurface, rect)
         else:
             size = (abs(size[0]), abs(size[1]))
             rect = self.surface.get_rect()
             rect.topleft = position[0], position[1]
             tempsurface = pygame.transform.flip(self.surface, size[0] < 0, size[1] < 0)
             tempsurface = pygame.transform.scale(tempsurface, size)
+            if alpha != 1:
+                tempsurface.set_alpha(alpha * 255)
             dest.blit(tempsurface, rect)
 
 class Atlas:

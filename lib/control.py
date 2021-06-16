@@ -54,6 +54,18 @@ combotext_numerals = [
     comboworm_atlas.region((200, 150, 50, 50)),
     comboworm_atlas.region((250, 150, 50, 50)),
 ]
+combotext_numerals_top = [
+    comboworm_atlas.region((115, 106, 50, 50)),
+    comboworm_atlas.region((115, 106, 50, 50)),
+    comboworm_atlas.region((300, 0, 50, 50)),
+    comboworm_atlas.region((350, 0, 50, 50)),
+    comboworm_atlas.region((300, 50, 50, 50)),
+    comboworm_atlas.region((350, 50, 50, 50)),
+    comboworm_atlas.region((300, 100, 50, 50)),
+    comboworm_atlas.region((350, 100, 50, 50)),
+    comboworm_atlas.region((300, 150, 50, 50)),
+    comboworm_atlas.region((350, 150, 50, 50)),
+]
 combotext_combo = comboworm_atlas.region((100, 200, 200, 50))
 combotext_fever = comboworm_atlas.region((100, 250, 200, 50))
 songs = {}
@@ -433,12 +445,14 @@ class Control:
                 wormrect.y = wormrect.y - 100 * (mult - 1)
             lib.game.screen.blit(worm, wormrect)
             if self.fever < 1:
-                combotext_numerals[self.combo].draw((30, 130))
+                mult = 1.1 + math.sin(self.beattime * math.pi * 2) * 0.1
+                combotext_numerals[self.combo].draw((30 - 25 * (mult - 1), 150 - 50 * (mult - 1)), size = (math.floor(50 * mult), math.floor(50 * mult)))
+                combotext_numerals_top[self.combo].draw((30 - 25 * (mult - 1), 150 - 50 * (mult - 1)), size = (math.floor(50 * mult), math.floor(50 * mult)), alpha = 0.125 + math.sin(self.beattime * math.pi * 2) * 0.125)
                 combotext_combo.draw((60, 150))
             else:
                 xmult = 1.05 + math.sin((self.beattime - 0.25) * math.pi * 2) * 0.05
                 ymult = 1.4 + math.sin(self.beattime * math.pi * 2) * 0.4
-                combotext_fever.draw((45 - 100 * (xmult - 1), 150 - 50 * (ymult - 1)), size = (math.floor(200 * xmult), math.floor(50 * ymult)))
+                combotext_fever.draw((45 - 100 * (xmult - 1), 160 - 50 * (ymult - 1)), size = (math.floor(200 * xmult), math.floor(50 * ymult)))
         
         if self.calling:
             color = (255, 255, 255)

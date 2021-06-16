@@ -53,7 +53,7 @@ def launch(track):
     pygame.init()
     pygame.mixer.init(frequency = 44100, channels = 16)
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption("patapon 4 or something")
+    pygame.display.set_caption("PATAPON 4: GENERAL GONG FUCKING DIES (AGAIN)")
     pygame.display.set_icon(pygame.image.load("assets/icon.png"))
 
     mission = lib.data.mission.Mission(track)
