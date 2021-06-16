@@ -12,44 +12,52 @@ frame = 0
 deltatime = 0
 tickslastframe = 0
 
-pygame.init()
-pygame.mixer.init(frequency = 44100, channels = 16)
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("patapon 4 or something")
-pygame.display.set_icon(pygame.image.load("assets/icon.png"))
+screen = None
 
-mission = lib.data.mission.Mission("hey-whazzat")
-test = lib.control.Control(mission)
+mission = None 
+control = None
 
 def close():
     pygame.quit()
     sys.exit()
 
 def update():
-    global test
+    global control
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             close()
     
     lib.input.update()
-    test.update()
+    control.update()
 
 def draw():
     global screen
-    global test
+    global control
 
     screen.fill((0, 0, 0))
 
-    test.draw()
+    control.draw()
     
     pygame.display.flip()
 
-def launch():
+def launch(track):
     global targetfps
     global frame
     global deltatime
     global tickslastframe
+    global screen
+    global mission
+    global control
+    
+    pygame.init()
+    pygame.mixer.init(frequency = 44100, channels = 16)
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption("patapon 4 or something")
+    pygame.display.set_icon(pygame.image.load("assets/icon.png"))
+
+    mission = lib.data.mission.Mission(track)
+    control = lib.control.Control(mission)
 
     clock = pygame.time.Clock()
     while True:

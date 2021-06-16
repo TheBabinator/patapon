@@ -92,7 +92,7 @@ class Control:
         self.marker = 0
 
         self.bpm = 120
-        self.time = -2.5
+        self.time = -4.5
         self.beattime = 0
         self.beat = 0
         self.measure = 0
