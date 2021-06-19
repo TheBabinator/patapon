@@ -92,12 +92,11 @@ class Song:
             if abs(hit[1] - self.pattern[i][1]) < 0.05:
                 perfects += 1
         if len(match) != len(self.pattern):
-            if now != 0:
-                if now >= 0.75:
-                    if len(match) == 0:
-                        return -1, 0
-                    elif now >= match[i][1] + 0.75:
-                       return -1, 0
+            if now >= 0.75:
+                if len(match) == 0:
+                    return 0, 0
+                elif now >= match[i][1] + (self.pattern[i + 1][1] - self.pattern[i][1]) + 0.25:
+                    return 0, 0
             return 1, 0
         return 2, perfects / total
 
@@ -281,16 +280,17 @@ class Control:
         
         if self.calling:
             if self.combo != -1:
-                level = -1
-                test = []
-                for hit in self.hits:
-                    test.append([hit[0], hit[1] - lib.math2.round(self.hits[0][1], 0.5)])
-                for sname, song in songs.items():
-                    this, perfect = song.eval(test, now = self.beattime % 4)
-                    if this > level:
-                        level = this
-                if level == -1:
-                    self.fail()
+                if self.beattime % 4 >= 0.75:
+                    level = 0
+                    test = []
+                    for hit in self.hits:
+                        test.append([hit[0], hit[1] - lib.math2.round(self.hits[0][1], 0.5)])
+                    for sname, song in songs.items():
+                        this, perfect = song.eval(test, now = self.beattime % 4)
+                        if this > level:
+                            level = this
+                    if level == 0:
+                        self.fail()
         if self.beat != math.floor(self.beattime):
             self.beat = math.floor(self.beattime)
             if self.combo == -1:
@@ -353,7 +353,7 @@ class Control:
                                         lib.sound.play(2, match + "-02", lib.settings.musicvolume)
                                     else:
                                         lib.sound.play(2, match + "-03", lib.settings.musicvolume)
-                                elif self.fever >= 0.5:
+                                elif self.combo >= 5:
                                     lib.sound.play(2, match + "-01", lib.settings.musicvolume)
                                 else:
                                     lib.sound.play(2, match + "-00", lib.settings.musicvolume)
