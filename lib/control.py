@@ -341,13 +341,13 @@ class Control:
                                         self.feverwarn += 1
                                     elif score == 1:
                                         self.feverwarn = 0
-                                    if self.feverwarn > 2:
+                                    if self.feverwarn == 2:
+                                        lib.sound.play(1, "Danger", lib.settings.sfxvolume)
+                                    elif self.feverwarn > 2:
                                         self.fever = 0
                                         self.combo = 1
                                         self.feverwarn = 0
                                         lib.sound.play(3, "Fail", lib.settings.musicvolume)
-                                    elif self.feverwarn == 2:
-                                        lib.sound.play(1, "Danger", lib.settings.sfxvolume)
                                 if self.fever >= 1:
                                     if self.fevertime % 2 == 1:
                                         lib.sound.play(2, match + "-02", lib.settings.musicvolume)
@@ -410,7 +410,7 @@ class Control:
                         self.calling = True
                         if self.fevertime != 0:
                             self.fevertime = 0
-                            lib.sound.play(2, "Fail", lib.settings.musicvolume)
+                            lib.sound.play(3, "Fail", lib.settings.musicvolume)
                         if self.measure == 0:
                             lib.sound.play(0, "Begin-01", lib.settings.musicvolume)
                         elif self.measure % 2 == 0:
