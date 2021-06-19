@@ -78,19 +78,28 @@ class Song:
     
     def eval(self, match, now = 0):
         if len(match) > len(self.pattern):
-            return 0
+            return 0, 0
         i = -1
+        perfects = 0
+        total = 0
         for hit in match:
             i += 1
+            total += 1
             if hit[0] != self.pattern[i][0]:
-                return 0
+                return 0, 0
             if abs(hit[1] - self.pattern[i][1]) > 0.2:
-                return 0
+                return 0, 0
+            if abs(hit[1] - self.pattern[i][1]) < 0.05:
+                perfects += 1
         if len(match) != len(self.pattern):
-            if now > self.pattern[i + 1][1] + 0.25:
-                return 0
-            return 1
-        return 2
+            if now != 0:
+                if now >= 0.75:
+                    if len(match) == 0:
+                        return -1, 0
+                    elif now >= match[i][1] + 0.75:
+                       return -1, 0
+            return 1, 0
+        return 2, perfects / total
 
 Song("March", [("pata", 0), ("pata", 1), ("pata", 2), ("pon", 3)])
 Song("Attack", [("pon", 0), ("pon", 1), ("pata", 2), ("pon", 3)])
@@ -116,11 +125,11 @@ class Control:
         self.measure = 0
         self.calling = False
         self.combo = -1
-        self.combotime = 0
         self.fever = 0
         self.fevertime = 0
+        self.feverwarn = 0
         self.hits = []
-        self.begin = False
+        self.beginnext = False
 
         self.hatapon = lib.pon.generic.Hatapon(self)
         self.hatapon.markeroffset = 0
@@ -163,6 +172,7 @@ class Control:
     def fail(self):
         self.combo = -1
         self.fever = 0
+        self.feverwarn = 0
         self.time = 0
         self.beattime = 0
         self.beat = -1
@@ -183,15 +193,17 @@ class Control:
                 self.hits.pop(0)
             match = None
             level = 0
+            score = 0
             while len(self.hits) > 0:
                 test = []
                 for hit in self.hits:
                     test.append([hit[0], hit[1] - lib.math2.round(self.hits[0][1], 1)])
                 for sname, song in songs.items():
-                    this = song.eval(test)
+                    this, perfect = song.eval(test)
                     if this > level:
                         match = sname
                         level = this
+                        score = perfect
                 if match:
                     break
                 else:
@@ -209,8 +221,10 @@ class Control:
                 else:
                     lib.sound.play(1, name + "_2", lib.settings.sfxvolume)
                 if level == 2:
-                    lib.sound.play(3, "perfect", lib.settings.sfxvolume)
-                    self.begin = True
+                    if score == 1:
+                        lib.sound.play(3, "perfect", lib.settings.sfxvolume)
+                    if self.beat < self.beattime:
+                        self.beginnext = True
                     for entity in self.entities:
                         if isinstance(entity, lib.pon.generic.Pon):
                             if entity.friendly and not entity.hatapon and entity.playinganimation == "confused":
@@ -225,14 +239,16 @@ class Control:
                 return
             match = None
             level = 0
+            score = 0
             test = []
             for hit in self.hits:
                 test.append([hit[0], hit[1] - lib.math2.round(self.hits[0][1], 1)])
             for sname, song in songs.items():
-                this = song.eval(test)
+                this, perfect = song.eval(test)
                 if this > level:
                     match = sname
                     level = this
+                    score = perfect
             if level == 0:
                 lib.sound.play(1, name + "_3", lib.settings.sfxvolume)
                 self.fail()
@@ -242,7 +258,8 @@ class Control:
                 else:
                     lib.sound.play(1, name + "_2", lib.settings.sfxvolume)
                 if level == 2:
-                    lib.sound.play(3, "perfect", lib.settings.sfxvolume)
+                    if score == 1:
+                        lib.sound.play(3, "perfect", lib.settings.sfxvolume)
                 for entity in self.entities:
                     if isinstance(entity, lib.pon.generic.Pon):
                         if entity.friendly and not entity.hatapon and entity.playinganimation == "confused":
@@ -261,7 +278,19 @@ class Control:
                 self.drum("don")
             if lib.input.getkey("triangle")[1]:
                 self.drum("chaka")
-
+        
+        if self.calling:
+            if self.combo != -1:
+                level = -1
+                test = []
+                for hit in self.hits:
+                    test.append([hit[0], hit[1] - lib.math2.round(self.hits[0][1], 0.5)])
+                for sname, song in songs.items():
+                    this, perfect = song.eval(test, now = self.beattime % 4)
+                    if this > level:
+                        level = this
+                if level == -1:
+                    self.fail()
         if self.beat != math.floor(self.beattime):
             self.beat = math.floor(self.beattime)
             if self.combo == -1:
@@ -271,13 +300,13 @@ class Control:
                 for hit in self.hits:
                     test.append([hit[0], hit[1] - lib.math2.round(self.hits[0][1], 0.5)])
                 for sname, song in songs.items():
-                    this = song.eval(test)
+                    this, perfect = song.eval(test)
                     if this > level:
                         match = sname
                         level = this
                 if level == 2:
-                    if self.begin:
-                        self.begin = False
+                    if self.beginnext:
+                        self.beginnext = False
                     else:
                         self.combo = 0
                         self.time = 0
@@ -291,19 +320,34 @@ class Control:
                         if self.calling:
                             match = None
                             level = 0
+                            score = 0
                             test = []
                             for hit in self.hits:
                                 test.append([hit[0], hit[1] - lib.math2.round(self.hits[0][1], 0.5)])
                             for sname, song in songs.items():
-                                this = song.eval(test)
+                                this, perfect = song.eval(test)
                                 if this > level:
                                     match = sname
                                     level = this
+                                    score = perfect
                             if level == 2:
                                 self.calling = False
                                 self.combo += 1
-                                progression = 0.11
-                                self.fever = min(max(self.fever + progression, 0), 2)
+                                if self.fever < 1:
+                                    if (self.combo > 2 and score == 1) or self.combo > 9:
+                                        self.fever = 1
+                                else:
+                                    if score < 0.75:
+                                        self.feverwarn += 1
+                                    elif score == 1:
+                                        self.feverwarn = 0
+                                    if self.feverwarn > 2:
+                                        self.fever = 0
+                                        self.combo = 1
+                                        self.feverwarn = 0
+                                        lib.sound.play(3, "Fail", lib.settings.musicvolume)
+                                    elif self.feverwarn == 2:
+                                        lib.sound.play(1, "Danger", lib.settings.sfxvolume)
                                 if self.fever >= 1:
                                     if self.fevertime % 2 == 1:
                                         lib.sound.play(2, match + "-02", lib.settings.musicvolume)
@@ -343,20 +387,11 @@ class Control:
                             if self.fever < 1:
                                 if self.fevertime != 0:
                                     self.fevertime = 0
-                                if self.combotime == 0:
-                                    self.combotime = 1
-                                else:
-                                    self.combotime += 1
-                                    if self.combotime > 9:
-                                        self.combotime = 1
-                                num = str(self.combotime)
+                                num = str(self.combo)
                                 if len(num) == 1:
                                     num = "0" + num
                                 lib.sound.play(0, "Combo-" + num, lib.settings.musicvolume)
                             else:
-                                if self.combotime != 0:
-                                    self.combotime = 0
-                                    lib.sound.play(2, "Fever", lib.settings.musicvolume)
                                 if self.fevertime == 0:
                                     self.fevertime = 1
                                 else:
@@ -364,6 +399,7 @@ class Control:
                                     if self.fevertime > 17:
                                         self.fevertime = 2
                                 if self.fevertime == 1:
+                                    lib.sound.play(2, "Fever", lib.settings.musicvolume)
                                     lib.sound.play(0, "Combo-10", lib.settings.musicvolume)
                                 else:
                                     num = str(self.fevertime - 1)
@@ -372,8 +408,6 @@ class Control:
                                     lib.sound.play(0, "Fever-" + num, lib.settings.musicvolume)
                     if self.combo == -1:
                         self.calling = True
-                        if self.combotime != 0:
-                            self.combotime = 0
                         if self.fevertime != 0:
                             self.fevertime = 0
                             lib.sound.play(2, "Fail", lib.settings.musicvolume)
@@ -421,7 +455,7 @@ class Control:
                 y = 0
                 if self.fever >= 1:
                     y = 65 - 30 * math.sin((self.beattime * 2 - ((x + 80) / 200)) * math.pi) * max(lib.math2.bias(1 - (x + 80) / 350, 0.1), 0)
-                elif self.fever >= 0.5:
+                elif self.combo >= 5:
                     y = 65 - 30 * math.sin((self.beattime * 2 + ((x + 80) / 200)) * math.pi) * (1 - max(lib.math2.bias(1 - (x + 80) / 350, 0.5), 0))
                 else:
                     s = math.sin(((x + 80) / 150) * math.pi * 3) * abs(math.sin(self.beattime * math.pi)) * max(lib.math2.bias(1 - (x + 80) / 350, 0.01), 0)
