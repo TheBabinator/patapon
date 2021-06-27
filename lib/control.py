@@ -357,7 +357,7 @@ class Control:
                                         self.fever = 0
                                         self.combo = 1
                                         self.feverwarn = 0
-                                        lib.sound.play(4, "Fail", lib.settings.musicvolume)
+                                        lib.sound.play(3, "Fail", lib.settings.musicvolume)
                                 if self.fever >= 1:
                                     if self.fevertime % 2 == 1:
                                         lib.sound.play(4, match + "-02", lib.settings.musicvolume)

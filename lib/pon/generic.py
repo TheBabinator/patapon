@@ -83,11 +83,15 @@ class Pon(lib.entity.Entity):
         y = ry
         y -= math.floor((self.timer % 0.5) * 6) * 2
         if self.playinganimation == "pata":
+            t = max((self.animationtime - 0.25) * 2, 0)
             patapon_legs_alt[0].draw((x, ry - 30))
-            y = ry
+            y = ry - 2 * lib.math2.bias(t, 5)
+            x = x - 3 * lib.math2.bias(t, 2)
         elif self.playinganimation == "pon":
+            t = max((self.animationtime - 0.25) * 2, 0)
             patapon_legs_alt[1].draw((x, ry - 30))
-            y = ry
+            y = ry - 2 * lib.math2.bias(t, 5)
+            x = x + 3 * lib.math2.bias(t, 2)
         elif self.playinganimation == "don":
             t = max((self.animationtime - 0.25) * 2, 0)
             patapon_legs_alt[2].draw((x, ry - 30))
@@ -111,20 +115,20 @@ class Pon(lib.entity.Entity):
             patapon_pupil_alt.draw((x, y - 40))
         elif self.playinganimation == "pata":
             t = max((self.animationtime - 0.25) * 2, 0)
-            m = lib.math2.bias(t, 10)
-            patapon_pupil.draw((x - 5 * m, y - 40 - 1 * m))
+            m = lib.math2.bias(t, 0.2)
+            patapon_pupil.draw((x - 4 * m, y - 40 - 1 * m))
         elif self.playinganimation == "pon":
             t = max((self.animationtime - 0.25) * 2, 0)
-            m = lib.math2.bias(t, 10)
-            patapon_pupil.draw((x + 5 * m, y - 40 - 1 * m))
+            m = lib.math2.bias(t, 0.2)
+            patapon_pupil.draw((x + 4 * m, y - 40 - 1 * m))
         elif self.playinganimation == "don":
             t = max((self.animationtime - 0.25) * 2, 0)
-            m = lib.math2.bias(t, 10)
-            patapon_pupil.draw((x, y - 40 + 5 * m))
+            m = lib.math2.bias(t, 0.2)
+            patapon_pupil.draw((x, y - 40 + 4 * m))
         elif self.playinganimation == "chaka":
             t = max((self.animationtime - 0.25) * 2, 0)
-            m = lib.math2.bias(t, 10)
-            patapon_pupil.draw((x, y - 40 - 5 * m))
+            m = lib.math2.bias(t, 0.2)
+            patapon_pupil.draw((x, y - 40 - 4 * m))
         else:
             patapon_pupil.draw((x, y - 40))
 
