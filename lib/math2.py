@@ -12,7 +12,6 @@ def lerptup(tuplea, tupleb, alpha):
         out.append(lerp(a, b, alpha))
     return tuple(out)
 
-
 def bias(x, bias):
     return (bias ** x - 1) / (bias - 1)
 

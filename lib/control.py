@@ -118,7 +118,8 @@ class Control:
         self.marker = 0
 
         self.bpm = 120
-        self.time = -4.5
+        self.paused = True
+        self.time = -2.5
         self.beattime = 0
         self.beat = 0
         self.measure = 0
@@ -188,6 +189,7 @@ class Control:
         nearest = lib.math2.round(self.beattime, 0.5)
         if self.combo == -1:
             self.hits.append([name, self.beattime])
+            # leaving this one in because youre not going to summon in measure 0 anyway
             if len(self.hits) > 4:
                 self.hits.pop(0)
             match = None
@@ -209,6 +211,7 @@ class Control:
                     self.hits.pop(0)
             if level == 0:
                 lib.sound.play(1, name + "_3", lib.settings.sfxvolume)
+                lib.sound.play(2, "ch_" + name + "_3", lib.settings.musicvolume)
                 for entity in self.entities:
                     if isinstance(entity, lib.pon.generic.Pon):
                         entity.moving = False
@@ -217,25 +220,24 @@ class Control:
             else:
                 if abs(nearest - self.beattime) < 0.05:
                     lib.sound.play(1, name, lib.settings.sfxvolume)
+                    lib.sound.play(2, "ch_" + name, lib.settings.musicvolume)
                 else:
                     lib.sound.play(1, name + "_2", lib.settings.sfxvolume)
+                    lib.sound.play(2, "ch_" + name + "_2", lib.settings.musicvolume)
+                for entity in self.entities:
+                        if isinstance(entity, lib.pon.generic.Pon):
+                            if entity.friendly and not entity.hatapon:
+                                entity.animation(name, time = 0.75)
                 if level == 2:
                     if score == 1:
                         lib.sound.play(3, "perfect", lib.settings.sfxvolume)
                     if self.beat < self.beattime:
                         self.beginnext = True
-                    for entity in self.entities:
-                        if isinstance(entity, lib.pon.generic.Pon):
-                            if entity.friendly and not entity.hatapon and entity.playinganimation == "confused":
-                                entity.animation("idle")
         else:
             if lib.math2.round(self.beattime, 0.5) % 8 < 4:
                 self.fail()
                 return
             self.hits.append([name, self.beattime])
-            if len(self.hits) > 4:
-                self.fail()
-                return
             match = None
             level = 0
             score = 0
@@ -250,21 +252,26 @@ class Control:
                     score = perfect
             if level == 0:
                 lib.sound.play(1, name + "_3", lib.settings.sfxvolume)
+                lib.sound.play(2, "ch_" + name + "_3", lib.settings.musicvolume)
                 self.fail()
             else:
                 if abs(nearest - self.beattime) < 0.05:
                     lib.sound.play(1, name, lib.settings.sfxvolume)
+                    lib.sound.play(2, "ch_" + name, lib.settings.musicvolume)
                 else:
                     lib.sound.play(1, name + "_2", lib.settings.sfxvolume)
+                    lib.sound.play(2, "ch_" + name + "_2", lib.settings.musicvolume)
+                for entity in self.entities:
+                    if isinstance(entity, lib.pon.generic.Pon):
+                        if entity.friendly and not entity.hatapon:
+                            entity.animation(name, time = 0.75)
                 if level == 2:
                     if score == 1:
                         lib.sound.play(3, "perfect", lib.settings.sfxvolume)
-                for entity in self.entities:
-                    if isinstance(entity, lib.pon.generic.Pon):
-                        if entity.friendly and not entity.hatapon and entity.playinganimation == "confused":
-                            entity.animation("idle")
-
     def update(self):
+        if self.paused:
+            self.paused = False
+            return
         self.time += lib.game.deltatime
         self.beattime = self.time * (self.bpm / 60)
 
@@ -337,26 +344,29 @@ class Control:
                                     if (self.combo > 2 and score == 1) or self.combo > 9:
                                         self.fever = 1
                                 else:
-                                    if score < 0.75:
-                                        self.feverwarn += 1
-                                    elif score == 1:
+                                    if score == 1:
                                         self.feverwarn = 0
-                                    if self.feverwarn == 2:
+                                    else:
+                                        if self.feverwarn != 4:
+                                            self.feverwarn = min(math.ceil(self.feverwarn + (1 - score) * 4), 4)
+                                        else:
+                                            self.feverwarn = 5
+                                    if self.feverwarn == 4:
                                         lib.sound.play(1, "Danger", lib.settings.sfxvolume)
-                                    elif self.feverwarn > 2:
+                                    elif self.feverwarn > 4:
                                         self.fever = 0
                                         self.combo = 1
                                         self.feverwarn = 0
-                                        lib.sound.play(3, "Fail", lib.settings.musicvolume)
+                                        lib.sound.play(4, "Fail", lib.settings.musicvolume)
                                 if self.fever >= 1:
                                     if self.fevertime % 2 == 1:
-                                        lib.sound.play(2, match + "-02", lib.settings.musicvolume)
+                                        lib.sound.play(4, match + "-02", lib.settings.musicvolume)
                                     else:
-                                        lib.sound.play(2, match + "-03", lib.settings.musicvolume)
+                                        lib.sound.play(4, match + "-03", lib.settings.musicvolume)
                                 elif self.combo >= 5:
-                                    lib.sound.play(2, match + "-01", lib.settings.musicvolume)
+                                    lib.sound.play(4, match + "-01", lib.settings.musicvolume)
                                 else:
-                                    lib.sound.play(2, match + "-00", lib.settings.musicvolume)
+                                    lib.sound.play(4, match + "-00", lib.settings.musicvolume)
                                 if match == "March":
                                     self.marker = self.hatapon.x + 200
                                     for entity in self.entities:
@@ -399,7 +409,7 @@ class Control:
                                     if self.fevertime > 17:
                                         self.fevertime = 2
                                 if self.fevertime == 1:
-                                    lib.sound.play(2, "Fever", lib.settings.musicvolume)
+                                    lib.sound.play(4, "Fever", lib.settings.musicvolume)
                                     lib.sound.play(0, "Combo-10", lib.settings.musicvolume)
                                 else:
                                     num = str(self.fevertime - 1)
@@ -410,20 +420,20 @@ class Control:
                         self.calling = True
                         if self.fevertime != 0:
                             self.fevertime = 0
-                            lib.sound.play(3, "Fail", lib.settings.musicvolume)
+                            lib.sound.play(4, "Fail", lib.settings.musicvolume)
                         if self.measure == 0:
                             lib.sound.play(0, "Begin-01", lib.settings.musicvolume)
                         elif self.measure % 2 == 0:
                             lib.sound.play(0, "Begin-02", lib.settings.musicvolume)
             if self.time < 0:
                 if self.beat == -4:
-                    lib.sound.play(2, "Countdown-01", lib.settings.sfxvolume)
+                    lib.sound.play(0, "Countdown-01", lib.settings.sfxvolume)
                 elif self.beat == -3:
-                    lib.sound.play(2, "Countdown-02", lib.settings.sfxvolume)
+                    lib.sound.play(0, "Countdown-02", lib.settings.sfxvolume)
                 elif self.beat == -2:
-                    lib.sound.play(2, "Countdown-03", lib.settings.sfxvolume)
+                    lib.sound.play(0, "Countdown-03", lib.settings.sfxvolume)
                 elif self.beat == -1:
-                    lib.sound.play(2, "Countdown-04", lib.settings.sfxvolume)
+                    lib.sound.play(0, "Countdown-04", lib.settings.sfxvolume)
             #print(self.measure, self.beat)
 
         for entity in self.entities:
@@ -466,10 +476,13 @@ class Control:
                 if self.fever >= 1:
                     comboworm_segments_back[x].draw((x, y), dest = worm)
                     comboworm_segments_fever[x].draw((x, y), dest = worm)
-                    comboworm_segments_top[x].draw((x, y), dest = worm)
+                    if self.feverwarn == 4:
+                        comboworm_segments_top_alt[x].draw((x, y), dest = worm)
+                    else:
+                        comboworm_segments_top[x].draw((x, y), dest = worm)
                 else:
                     comboworm_segments[x].draw((x, y), dest = worm)
-                    if self.fever >= 0.5:
+                    if self.combo >= 5:
                         comboworm_segments_top_alt[x].draw((x, y), dest = worm)
                     else:
                         comboworm_segments_top[x].draw((x, y), dest = worm)
