@@ -16,19 +16,29 @@ patapon_legs = [
     patapon_atlas.region((0, 30, 30, 30)),
     patapon_atlas.region((30, 30, 30, 30)),
     patapon_atlas.region((0, 60, 30, 30)),
-    patapon_atlas.region((30, 60, 30, 30))
+    patapon_atlas.region((30, 60, 30, 30)),
 ]
 patapon_legs_alt = [
     patapon_atlas.region((0, 90, 30, 30)),
     patapon_atlas.region((30, 90, 30, 30)),
     patapon_atlas.region((0, 120, 30, 30)),
-    patapon_atlas.region((30, 120, 30, 30))
+    patapon_atlas.region((30, 120, 30, 30)),
 ]
 hatapon_atlas = lib.graphics.Atlas("assets/sprites/entity/pon/hatapon.png")
 hatapon_arms_normal = hatapon_atlas.region((0, 0, 50, 50))
 hatapon_arms_up = hatapon_atlas.region((50, 0, 50, 50))
 hatapon_flagpole = hatapon_atlas.region((100, 0, 50, 150))
 hatapon_flag = hatapon_atlas.region((0, 50, 50, 100))
+yaripon_atlas = lib.graphics.Atlas("assets/sprites/entity/pon/yaripon.png")
+yaripon_arms_normal = yaripon_atlas.region((0, 0, 50, 50))
+yaripon_arms_ready = yaripon_atlas.region((50, 0, 50, 50))
+yaripon_arms_charge = yaripon_atlas.region((100, 0, 50, 50))
+yaripon_arms_alt = [
+    yaripon_atlas.region((0, 50, 50, 50)),
+    yaripon_atlas.region((50, 50, 50, 50)),
+    yaripon_atlas.region((0, 100, 50, 50)),
+    yaripon_atlas.region((50, 100, 50, 50)),
+]
 
 class Pon(lib.entity.Entity):
     def __init__(self, control, friendly):
@@ -116,11 +126,11 @@ class Pon(lib.entity.Entity):
         elif self.playinganimation == "pata":
             t = max((self.animationtime - 0.25) * 2, 0)
             m = lib.math2.bias(t, 0.2)
-            patapon_pupil.draw((x - 4 * m, y - 40 - 1 * m))
+            patapon_pupil.draw((x - 3 * m, y - 40 - 2 * m))
         elif self.playinganimation == "pon":
             t = max((self.animationtime - 0.25) * 2, 0)
             m = lib.math2.bias(t, 0.2)
-            patapon_pupil.draw((x + 4 * m, y - 40 - 1 * m))
+            patapon_pupil.draw((x + 3 * m, y - 40 - 2 * m))
         elif self.playinganimation == "don":
             t = max((self.animationtime - 0.25) * 2, 0)
             m = lib.math2.bias(t, 0.2)
@@ -131,6 +141,7 @@ class Pon(lib.entity.Entity):
             patapon_pupil.draw((x, y - 40 - 4 * m))
         else:
             patapon_pupil.draw((x, y - 40))
+        return x, y
 
 class Hatapon(Pon):
     def __init__(self, control):
@@ -156,6 +167,21 @@ class Yaripon(Pon):
     def __init__(self, control, friendly):
         super().__init__(control, friendly)
     
+    def draw(self):
+        x, y = super().draw()
+        if self.playinganimation == "charge":
+            yaripon_arms_charge.draw((x - 10, y - 50))
+        elif self.playinganimation == "pata":
+            yaripon_arms_alt[0].draw((x - 10, y - 50))
+        elif self.playinganimation == "pon":
+            yaripon_arms_alt[1].draw((x - 10, y - 50))
+        elif self.playinganimation == "don":
+            yaripon_arms_alt[2].draw((x - 10, y - 50))
+        elif self.playinganimation == "chaka":
+            yaripon_arms_alt[3].draw((x - 10, y - 50))
+        else:
+            yaripon_arms_normal.draw((x - 10, y - 50))
+
     def attack(self):
         super().attack()
         self.animation("angry")
