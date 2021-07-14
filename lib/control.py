@@ -87,9 +87,9 @@ class Song:
             total += 1
             if hit[0] != self.pattern[i][0]:
                 return 0, 0
-            if abs(hit[1] - self.pattern[i][1]) > 0.2:
+            if abs(hit[1] - self.pattern[i][1]) > lib.settings.misstime:
                 return 0, 0
-            if abs(hit[1] - self.pattern[i][1]) < 0.05:
+            if abs(hit[1] - self.pattern[i][1]) < lib.settings.perfecttime:
                 perfects += 1
         if len(match) != len(self.pattern):
             if now >= 0.75:
@@ -218,7 +218,7 @@ class Control:
                         if not entity.hatapon:
                             entity.animation("confused")
             else:
-                if abs(nearest - self.beattime) < 0.05:
+                if abs(nearest - self.beattime) < lib.settings.perfecttime:
                     lib.sound.play(1, name, lib.settings.sfxvolume)
                     lib.sound.play(2, "ch_" + name, lib.settings.musicvolume)
                 else:
@@ -231,7 +231,7 @@ class Control:
                 if level == 2:
                     if score == 1:
                         lib.sound.play(3, "perfect", lib.settings.sfxvolume)
-                    if self.beat < self.beattime:
+                    if lib.math2.round(self.beattime, 1) >= self.beattime:
                         self.beginnext = True
         else:
             if lib.math2.round(self.beattime, 0.5) % 8 < 4:
@@ -255,7 +255,7 @@ class Control:
                 lib.sound.play(2, "ch_" + name + "_3", lib.settings.musicvolume)
                 self.fail()
             else:
-                if abs(nearest - self.beattime) < 0.05:
+                if abs(nearest - self.beattime) < lib.settings.perfecttime:
                     lib.sound.play(1, name, lib.settings.sfxvolume)
                     lib.sound.play(2, "ch_" + name, lib.settings.musicvolume)
                 else:
