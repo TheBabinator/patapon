@@ -68,6 +68,13 @@ combotext_numerals_top = [
 ]
 combotext_combo = comboworm_atlas.region((100, 200, 200, 50))
 combotext_fever = comboworm_atlas.region((100, 250, 200, 50))
+armyhud_atlas = lib.graphics.Atlas("assets/sprites/ui/armyhud.png")
+armyhud_circle = armyhud_atlas.region((0, 0, 50, 50))
+armyhud_health_frame = armyhud_atlas.region((50, 0, 50, 10))
+armyhud_health_green = armyhud_atlas.region((52, 12, 46, 6))
+armyhud_health_yellow = armyhud_atlas.region((52, 22, 46, 6))
+armyhud_health_orange = armyhud_atlas.region((52, 32, 46, 6))
+armyhud_health_red = armyhud_atlas.region((52, 42, 46, 6))
 songs = {}
 
 class Song:
@@ -131,25 +138,33 @@ class Control:
         self.hits = []
         self.beginnext = False
 
+        self.army = []
+        self.army.append([])
+        self.army.append([])
+
         self.hatapon = lib.pon.generic.Hatapon(self)
         self.hatapon.markeroffset = 0
         self.hatapon.x = 0
         self.entities.append(self.hatapon)
+        self.army[0].append(self.hatapon)
 
         pon = lib.pon.generic.Yaripon(self, True)
         pon.markeroffset = 100
         pon.x = 100
         self.entities.append(pon)
+        self.army[1].append(pon)
 
         pon = lib.pon.generic.Yaripon(self, True)
         pon.markeroffset = 150
         pon.x = 150
         self.entities.append(pon)
+        self.army[1].append(pon)
 
         pon = lib.pon.generic.Yaripon(self, True)
         pon.markeroffset = 200
         pon.x = 200
         self.entities.append(pon)
+        self.army[1].append(pon)
 
         self.load()
 
@@ -231,7 +246,7 @@ class Control:
                 if level == 2:
                     if score == 1:
                         lib.sound.play(3, "perfect", lib.settings.sfxvolume)
-                    if lib.math2.round(self.beattime, 1) >= self.beattime:
+                    if math.floor(self.beattime) < self.beattime:
                         self.beginnext = True
         else:
             if lib.math2.round(self.beattime, 0.5) % 8 < 4:
@@ -388,6 +403,11 @@ class Control:
                                         if isinstance(entity, lib.pon.generic.Pon):
                                             if entity.friendly:
                                                 entity.charge()
+                                elif match == "Party":
+                                    for entity in self.entities:
+                                        if isinstance(entity, lib.pon.generic.Pon):
+                                            if entity.friendly:
+                                                entity.party()
                             else:
                                 self.fail()
                             self.hits = []
@@ -434,7 +454,6 @@ class Control:
                     lib.sound.play(0, "Countdown-03", lib.settings.sfxvolume)
                 elif self.beat == -1:
                     lib.sound.play(0, "Countdown-04", lib.settings.sfxvolume)
-            #print(self.measure, self.beat)
 
         for entity in self.entities:
             entity.timer = self.time
@@ -444,10 +463,12 @@ class Control:
                     self.camerax = lib.math2.lerp(self.camerax, entity.x - 200, lib.game.deltatime * 2)
 
     def draw(self):
-        lib.game.screen.fill((200, 200, 250))
+        lib.game.screen.fill(self.mission.sky)
 
         if self.cameray < 0:
             lib.graphics.rect((10, 10, 10), (0, lib.game.height + self.cameray, lib.game.width, -self.cameray))
+            for x in range(10):
+                lib.graphics.rect(self.mission.ground, (0, lib.game.height + self.cameray + x, lib.game.width, 1), alpha = lib.math2.bias(1 - x / 10, 10))
         
         for entity in self.entities:
             entity.draw()
@@ -536,3 +557,28 @@ class Control:
             lib.graphics.rect(color, (20, 22, 2, lib.game.height - 44), transparency)
             lib.graphics.rect(color, (20, lib.game.height - 22, lib.game.width - 40, 2), transparency)
             lib.graphics.rect(color, (lib.game.width - 22, 22, 2, lib.game.height - 44), transparency)
+        
+        x = 40
+        for squad in self.army:
+            drawing = None
+            totalHealth = 0
+            totalMaxHealth = 0
+            for pon in squad:
+                totalHealth += pon.health
+                totalMaxHealth += 100
+                if pon.alive:
+                    drawing = pon
+            if drawing:
+                armyhud_circle.draw((x, 40))
+                armyhud_health_frame.draw((x, 100))
+                bar = totalHealth / totalMaxHealth
+                if bar > 0.75:
+                    armyhud_health_green.draw((x + 2, 102), size = (math.ceil(46 * bar), 6))
+                elif bar > 0.5:
+                    armyhud_health_yellow.draw((x + 2, 102), size = (math.ceil(46 * bar), 6))
+                elif bar > 0.25:
+                    armyhud_health_orange.draw((x + 2, 102), size = (math.ceil(46 * bar), 6))
+                else:
+                    armyhud_health_red.draw((x + 2, 102), size = (math.ceil(46 * bar), 6))
+                drawing.drawPreview(x + 10, 90)
+                x += 70 

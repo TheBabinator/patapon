@@ -1,9 +1,11 @@
 import math
+import random
 import lib.game
 import lib.graphics
 import lib.entity
 import lib.math2
 import lib.content.accessories
+import lib.content.statuseffects
 
 patapon_atlas = lib.graphics.Atlas("assets/sprites/entity/pon/patapon.png")
 patapon_head = patapon_atlas.region((0, 0, 30, 30))
@@ -47,6 +49,7 @@ class Pon(lib.entity.Entity):
         self.hatapon = False
         self.timer = 0
         self.helmet = lib.content.accessories.content["wooden-helm"]
+        self.weapon = None
         self.playinganimation = "idle"
         self.animationtime = 0
         self.markeroffset = 0
@@ -73,13 +76,20 @@ class Pon(lib.entity.Entity):
     def charge(self):
         self.animation("idle")
 
+    def party(self):
+        self.statuseffects = []
+        self.animation("idle")
+
     def update(self):
+        super().update()
         if self.animationtime > 0:
             self.animationtime -= lib.game.deltatime
         else:
             self.playinganimation = "idle"
             self.animationtime = 0
         if self.moving:
+            if random.randint(1, 1000) == 1:
+                lib.content.statuseffects.content["burn"].give(self)
             if self.x < self.movetarget:
                 self.x = min(self.x + self.movespeed * lib.game.deltatime, self.movetarget)
             elif self.x > self.movetarget:
@@ -87,11 +97,7 @@ class Pon(lib.entity.Entity):
             else:
                 self.moving = False
 
-    def draw(self):
-        x = self.x - self.control.camerax
-        ry = lib.game.height - (self.y - self.control.cameray)
-        y = ry
-        y -= math.floor((self.timer % 0.5) * 6) * 2
+    def drawAt(self, x, y, ry):
         if self.playinganimation == "pata":
             t = max((self.animationtime - 0.25) * 2, 0)
             patapon_legs_alt[0].draw((x, ry - 30))
@@ -143,17 +149,27 @@ class Pon(lib.entity.Entity):
             patapon_pupil.draw((x, y - 40))
         return x, y
 
+    def draw(self):
+        if self.alive:
+            x = self.x - self.control.camerax
+            ry = lib.game.height - (self.y - self.control.cameray)
+            y = ry
+            y -= math.floor((self.timer % 0.5) * 6) * 2
+            return self.drawAt(x, y, ry)
+    
+    def drawPreview(self, x, y):
+        ry = y
+        y -= math.floor((self.timer % 0.5) * 6) * 2
+        self.drawAt(x, y, ry)
+
 class Hatapon(Pon):
     def __init__(self, control):
         super().__init__(control, True)
         self.hatapon = True
         self.helmet = lib.content.accessories.content["iron-helm"]
     
-    def draw(self):
-        super().draw()
-        x = self.x - self.control.camerax
-        y = lib.game.height - (self.y - self.control.cameray)
-        y -= math.floor((self.timer % 0.5) * 6) * 2
+    def drawAt(self, x, y, ry):
+        super().drawAt(x, y, ry)
         if not self.moving:
             hatapon_arms_normal.draw((x - 10, y - 50))
             hatapon_flagpole.draw((x - 8, y - 155))
@@ -166,9 +182,10 @@ class Hatapon(Pon):
 class Yaripon(Pon):
     def __init__(self, control, friendly):
         super().__init__(control, friendly)
+        self.weapon = lib.content.accessories.content["wooden-spear"]
     
-    def draw(self):
-        x, y = super().draw()
+    def drawAt(self, x, y, ry):
+        x, y = super().drawAt(x, y, ry)
         if self.playinganimation == "charge":
             yaripon_arms_charge.draw((x - 10, y - 50))
         elif self.playinganimation == "pata":

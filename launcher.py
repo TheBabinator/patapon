@@ -1,10 +1,5 @@
 import lib.game
 print("hello i am the launcher")
-print("please select a track")
-print("tracks:")
-print("freakout-rock")
-print("hey-whazzat")
-print("tum-ta-ta-tum")
-print("pls type one of those and not something else :))))")
-track = input("track name: ")
-lib.game.launch(track)
+print("please type a mission name")
+missionname = input("mission: ")
+lib.game.launch(missionname)

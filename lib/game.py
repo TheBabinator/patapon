@@ -41,7 +41,7 @@ def draw():
     
     pygame.display.flip()
 
-def launch(track):
+def launch(missionname):
     global targetfps
     global frame
     global deltatime
@@ -56,7 +56,7 @@ def launch(track):
     pygame.display.set_caption("the")
     pygame.display.set_icon(pygame.image.load("assets/icon.png"))
 
-    mission = lib.data.mission.Mission(track)
+    mission = lib.data.mission.Mission(missionname)
     control = lib.control.Control(mission)
 
     clock = pygame.time.Clock()
