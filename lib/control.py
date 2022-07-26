@@ -75,6 +75,9 @@ armyhud_health_green = armyhud_atlas.region((52, 12, 46, 6))
 armyhud_health_yellow = armyhud_atlas.region((52, 22, 46, 6))
 armyhud_health_orange = armyhud_atlas.region((52, 32, 46, 6))
 armyhud_health_red = armyhud_atlas.region((52, 42, 46, 6))
+armyhud_number = []
+for x in range(10):
+    armyhud_number.append(armyhud_atlas.region((x * 20, 50, 20, 20)))
 songs = {}
 
 class Song:
@@ -145,25 +148,21 @@ class Control:
         self.hatapon = lib.pon.generic.Hatapon(self)
         self.hatapon.markeroffset = 0
         self.hatapon.x = 0
-        self.entities.append(self.hatapon)
         self.army[0].append(self.hatapon)
 
         pon = lib.pon.generic.Yaripon(self, True)
         pon.markeroffset = 100
         pon.x = 100
-        self.entities.append(pon)
         self.army[1].append(pon)
 
         pon = lib.pon.generic.Yaripon(self, True)
         pon.markeroffset = 150
         pon.x = 150
-        self.entities.append(pon)
         self.army[1].append(pon)
 
         pon = lib.pon.generic.Yaripon(self, True)
         pon.markeroffset = 200
         pon.x = 200
-        self.entities.append(pon)
         self.army[1].append(pon)
 
         self.load()
@@ -563,11 +562,13 @@ class Control:
             drawing = None
             totalHealth = 0
             totalMaxHealth = 0
+            alive = 0
             for pon in squad:
                 totalHealth += pon.health
                 totalMaxHealth += 100
                 if pon.alive:
                     drawing = pon
+                    alive += 1
             if drawing:
                 armyhud_circle.draw((x, 40))
                 armyhud_health_frame.draw((x, 100))
@@ -581,4 +582,5 @@ class Control:
                 else:
                     armyhud_health_red.draw((x + 2, 102), size = (math.ceil(46 * bar), 6))
                 drawing.drawPreview(x + 10, 90)
-                x += 70 
+                armyhud_number[alive].draw((x + 35, 75))
+                x += 70

@@ -88,7 +88,7 @@ class Pon(lib.entity.Entity):
             self.playinganimation = "idle"
             self.animationtime = 0
         if self.moving:
-            if random.randint(1, 1000) == 1:
+            if random.randint(1, 100000) == 69:
                 lib.content.statuseffects.content["burn"].give(self)
             if self.x < self.movetarget:
                 self.x = min(self.x + self.movespeed * lib.game.deltatime, self.movetarget)
