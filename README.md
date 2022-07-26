@@ -14,4 +14,4 @@ controls:
 * DOWN ARROW KEY - Cross
 * UP ARROW KEY - Triangle
 
-https://cdn.discordapp.com/attachments/889250518151610378/1001605052466745425/How_to_play_.png
+![hopw 2p plasy](https://cdn.discordapp.com/attachments/889250518151610378/1001605052466745425/How_to_play_.png)
